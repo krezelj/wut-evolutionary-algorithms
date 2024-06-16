@@ -1,4 +1,4 @@
-from ea import Specimen
+from ea.specimens import Specimen
 import numpy as np
 from scipy.special import softmax
 from typing import List
@@ -37,13 +37,15 @@ class Evolution():
                 print(f'generation: {i+1}')
             self.simulate_one_generation()
 
-    def simulate_one_generation(self):
+    def simulate_one_generation(self, verbose: int = 0):
         new_specimens = np.empty(self.generation_size, dtype=Specimen)
 
         # evaluate all current specimen
         fitness = np.array([
             self.all_specimens[i].evaluate() for i in range(self.generation_size)
         ])
+        if verbose > 0:
+            print(f"best fitness this generation: {fitness.max()}")
         if np.all(np.isinf(fitness)):
             print("all fitness are -infinity")
 
@@ -69,7 +71,7 @@ class Evolution():
             new_specimen.mutate(**self.mutation_args)
         return new_specimen
     
-    def get_best_specimen(self):
+    def get_best_specimen(self) -> tuple[Specimen, float]:
         fitness = np.array([
             self.all_specimens[i].evaluate() for i in range(self.generation_size)
         ])

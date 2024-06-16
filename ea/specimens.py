@@ -1,5 +1,9 @@
+from typing import Optional
 import numpy as np
-from scipy.special import softmax
+import numpy.typing as npt
+import gymnasium as gym
+
+Weights = list[tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]]
 
 class Specimen():
 
@@ -27,97 +31,69 @@ class Specimen():
             new_genes[k] = parents[parent_idx].genes[k]
         return new_genes
     
-class NeuralNetwork(Specimen):
+class CartPoleAgent(Specimen):
 
-    def __init__(self, genes) -> None:
-        self.genes = genes
+    RUNS_PER_EVALUATION = 10
 
-    def __str__(self) -> str:
-        return "NeuralNetwork"
-    
-    def evaluate(self) -> float:
-        pass
+    env: gym.Env = None
+    architecture: list[int] = [4, 4, 2]
+    hidden_activation = lambda _, x : np.clip(x, a_min=0, a_max=None) # relu
+    output_activation = lambda _, x : x
 
-    def mutate(self) -> None:
-        pass
-
-    def copy(self) -> 'NeuralNetwork':
-        return NeuralNetwork(self.genes)
-    
-    @classmethod
-    def crossover(cls, *parents):
-        pass # not used
-
-class MLP(Specimen):
-
-    X = None
-    Y = None
-    activation_function = None
-    loss_function = None
-    output_activation = None
-
-    def __init__(self, genes=None, architecture=None) -> None:
+    def __init__(self, genes: Optional[Weights] = None) -> None:
         if genes is None:
-            if architecture is None: 
-                raise ValueError
-            self.genes = []
-            for i in range(len(architecture) - 1):
-                self.genes.append((
-                    np.random.uniform(-1, 1, size=(architecture[i+1], architecture[i])),
-                    np.random.uniform(-1, 1, size=(architecture[i+1], 1))
-                ))
+            self.__init_weights()
         else:
             self.genes = genes
 
-    @classmethod
-    def set_parameters(cls, X, Y, activation_function, output_activation, loss_function):
-        cls.X = X
-        cls.Y = Y
-        cls.activation_function = activation_function
-        cls.loss_function = loss_function
-        cls.output_activation = output_activation
+    def __str__(self) -> str:
+        return "CartPoleAgent"
+    
+    def evaluate(self) -> float:
+        total_reward = 0
+        for run in range(CartPoleAgent.RUNS_PER_EVALUATION):
+            state, _ = self.env.reset()
+            done = False
+            while not done:
+                action = self.__get_action(state)
+                state, reward, done, truncated, _ = self.env.step(action)
+                done = done or truncated
+                total_reward += reward
+        return total_reward / (CartPoleAgent.RUNS_PER_EVALUATION * 10.0)
 
-    def evaluate(self):
-        output = self.X
-        for i, (W, b) in enumerate(self.genes):
-            if i < len(self.genes) - 1:
-                output = MLP.activation_function(W @ output + b)
-            else:
-                output = MLP.output_activation(W @ output + b)
-        return -MLP.loss_function(self.Y.T, output.T)
-
-    def mutate(self, p=0.01, strength=0.2):
+    def mutate(self, prob: float = 1.0, strength: float = 0.02) -> None:
         for W, b in self.genes:
-            dW = (np.random.uniform(size=W.shape) < p) * np.random.uniform(-strength/2, strength/2, size=W.shape)
-            db = (np.random.uniform(size=b.shape) < p) * np.random.uniform(-strength/2, strength/2, size=b.shape)
+            dW = (np.random.uniform(size=W.shape) <= prob) * np.random.normal(loc=0, scale=strength, size=W.shape)
+            db = (np.random.uniform(size=b.shape) <= prob) * np.random.normal(loc=0, scale=strength, size=b.shape)
             W += dW
             b += db
-    
-    def copy(self):
-        raise NotImplementedError
+
+    def copy(self) -> 'CartPoleAgent':
+        genes_copy = []
+        for W, b in self.genes:
+            genes_copy.append((
+                W.copy(),
+                b.copy()
+            ))
+        return CartPoleAgent(genes_copy)
     
     @classmethod
-    def crossover(cls, *parents):
-        new_genes = []
-        if len(parents) == 1:
-            for i in range(len(parents[0].genes)):
-                new_genes.append((
-                    np.copy(parents[0].genes[i][0]),
-                    np.copy(parents[0].genes[i][1])
-                ))    
-            return MLP(new_genes)
-        # assuming 2 parents
-        
-        for i in range(len(parents[0].genes)):
-            W1, b1 = parents[0].genes[i]
-            W2, b2 = parents[1].genes[i]
+    def crossover(cls, *parents: list['CartPoleAgent']):
+        return parents[0].copy()
 
-            pW = np.random.uniform(size=W1.shape) < 0.5
-            pb = np.random.uniform(size=b1.shape) < 0.5
-            new_genes.append((W1 * pW + W2 * (1-pW), b1 * pb + b2 * (1-pb)))
-        return MLP(new_genes)
-        
+    def __init_weights(self):
+        self.genes = []
+        for i in range(len(self.architecture) - 1):
+            self.genes.append((
+                np.random.uniform(-1, 1, size=(self.architecture[i + 1], self.architecture[i])),
+                np.random.uniform(-1, 1, size=(self.architecture[i + 1], 1))
+            ))
 
-        
-
-
+    def __get_action(self, state: npt.NDArray):
+        output = state.reshape((self.architecture[0], 1))
+        for i, (W, b) in enumerate(self.genes):
+            if i < len(self.genes) - 1:
+                output = self.hidden_activation(W @ output + b)
+            else:
+                output = self.output_activation(W @ output + b)
+        return np.argmax(output)
