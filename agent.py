@@ -23,8 +23,9 @@ class Agent:
     
     def evaluate(self) -> float:
         total_reward = 0
-        for run in range(Agent.RUNS_PER_EVALUATION):
+        for _ in range(Agent.RUNS_PER_EVALUATION):
             state, _ = self.ENV.reset(seed=self.SEED)
+            self.SEED += 1
             done = False
             while not done:
                 action = self.__get_action(state)
