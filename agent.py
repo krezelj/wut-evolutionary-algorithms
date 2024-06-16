@@ -5,11 +5,12 @@ import numpy.typing as npt
 
 Weights = list[tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]]
 
-class CartPoleAgent:
+class Agent:
 
     RUNS_PER_EVALUATION = 10
-
-    env: gym.Env = None
+    SEED = 0
+    ENV: gym.Env = None
+    
     architecture: list[int] = [4, 4, 2]
     hidden_activation = lambda _, x : np.clip(x, a_min=0, a_max=None) # relu
     output_activation = lambda _, x : x
@@ -19,21 +20,18 @@ class CartPoleAgent:
             self.__init_weights()
         else:
             self.genes = genes
-
-    def __str__(self) -> str:
-        return "CartPoleAgent"
     
     def evaluate(self) -> float:
         total_reward = 0
-        for run in range(CartPoleAgent.RUNS_PER_EVALUATION):
-            state, _ = self.env.reset()
+        for run in range(Agent.RUNS_PER_EVALUATION):
+            state, _ = self.ENV.reset(seed=self.SEED)
             done = False
             while not done:
                 action = self.__get_action(state)
-                state, reward, done, truncated, _ = self.env.step(action)
+                state, reward, done, truncated, _ = self.ENV.step(action)
                 done = done or truncated
                 total_reward += reward
-        return total_reward / (CartPoleAgent.RUNS_PER_EVALUATION * 10.0)
+        return total_reward / (Agent.RUNS_PER_EVALUATION * 10.0)
 
     def mutate(self, prob: float = 1.0, strength: float = 0.02) -> None:
         for W, b in self.genes:
@@ -42,14 +40,14 @@ class CartPoleAgent:
             W += dW
             b += db
 
-    def copy(self) -> 'CartPoleAgent':
+    def copy(self) -> 'Agent':
         genes_copy = []
         for W, b in self.genes:
             genes_copy.append((
                 W.copy(),
                 b.copy()
             ))
-        return CartPoleAgent(genes_copy)
+        return Agent(genes_copy)
     
     def __init_weights(self):
         self.genes = []

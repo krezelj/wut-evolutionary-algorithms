@@ -1,4 +1,4 @@
-from cartpole_agent import CartPoleAgent
+from agent import Agent
 import numpy as np
 from scipy.special import softmax
 from typing import List
@@ -21,8 +21,8 @@ class Evolution():
         self.__init_first_generation()
 
     def __init_first_generation(self):
-        self.all_specimens : List[CartPoleAgent] = \
-            np.array([CartPoleAgent(**self.init_args) for _ in range(self.generation_size)])
+        self.all_specimens : List[Agent] = \
+            np.array([Agent(**self.init_args) for _ in range(self.generation_size)])
 
     def simulate(self, n_generations):
         for i in range(n_generations):
@@ -31,12 +31,14 @@ class Evolution():
             self.simulate_one_generation()
 
     def simulate_one_generation(self, verbose: int = 0):
-        new_specimens = np.empty(self.generation_size, dtype=CartPoleAgent)
+        new_specimens = np.empty(self.generation_size, dtype=Agent)
 
         # evaluate all current specimen
         fitness = np.array([
             self.all_specimens[i].evaluate() for i in range(self.generation_size)
         ])
+        best_specimen = self.all_specimens[fitness.argmax()]
+
         if verbose > 0:
             print(f"best fitness this generation: {fitness.max()}")
         if np.all(np.isinf(fitness)):
@@ -53,16 +55,17 @@ class Evolution():
         
         # update
         self.all_specimens = new_specimens
+        return best_specimen, fitness.max()
 
     def __create_new_specimen(self, weights = None):
         if weights is None:
             weights = np.ones(self.generation_size)
-        parent: CartPoleAgent = np.random.choice(self.all_specimens, size=1, replace=True, p=weights)[0]
-        new_specimen : CartPoleAgent = parent.copy()
+        parent: Agent = np.random.choice(self.all_specimens, size=1, replace=True, p=weights)[0]
+        new_specimen : Agent = parent.copy()
         new_specimen.mutate(**self.mutation_args)
         return new_specimen
     
-    def get_best_specimen(self) -> tuple[CartPoleAgent, float]:
+    def get_best_specimen(self) -> tuple[Agent, float]:
         fitness = np.array([
             self.all_specimens[i].evaluate() for i in range(self.generation_size)
         ])

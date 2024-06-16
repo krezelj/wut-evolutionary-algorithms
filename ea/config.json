@@ -1,0 +1,9 @@
+{
+    "env_name": "Acrobot-v1",
+    "n_runs": 1,
+    "n_generations": 20,
+    "generation_size": 50,
+    "top_k": 5,
+    "prob": 0.1,
+    "strength": 0.2
+}
