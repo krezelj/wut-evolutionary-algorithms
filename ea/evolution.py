@@ -8,28 +8,21 @@ N_PARENTS_IF_CROSSOVER = 2
 class Evolution():
 
     def __init__(self, 
-                 specimen_type, 
-                 generation_size,
-                 top_k,
-                 init_args = {},
-                 mutation_args = {},
-                 allow_crossover=True,
-                 allow_mutation=True,
+                 generation_size: int,
+                 top_k: int,
+                 init_args: dict = {},
+                 mutation_args: dict = {},
                 ) -> None:
         assert(top_k <= generation_size)
-        assert(allow_crossover or allow_mutation)
-        self.specimen_type = specimen_type
         self.generation_size = generation_size
         self.init_args = init_args
         self.mutation_args = mutation_args
         self.top_k = top_k
-        self.allow_crossover = allow_crossover
-        self.allow_mutation = allow_mutation
         self.__init_first_generation()
 
     def __init_first_generation(self):
         self.all_specimens : List[CartPoleAgent] = \
-            np.array([self.specimen_type(**self.init_args) for _ in range(self.generation_size)])
+            np.array([CartPoleAgent(**self.init_args) for _ in range(self.generation_size)])
 
     def simulate(self, n_generations):
         for i in range(n_generations):
@@ -64,12 +57,9 @@ class Evolution():
     def __create_new_specimen(self, weights = None):
         if weights is None:
             weights = np.ones(self.generation_size)
-        #n_parents = N_PARENTS_IF_CROSSOVER if self.allow_crossover else 1
-        #parents = np.random.choice(self.all_specimens, size=n_parents, replace=True, p=weights)
         parent: CartPoleAgent = np.random.choice(self.all_specimens, size=1, replace=True, p=weights)[0]
         new_specimen : CartPoleAgent = parent.copy()
-        if self.allow_mutation:
-            new_specimen.mutate(**self.mutation_args)
+        new_specimen.mutate(**self.mutation_args)
         return new_specimen
     
     def get_best_specimen(self) -> tuple[CartPoleAgent, float]:
