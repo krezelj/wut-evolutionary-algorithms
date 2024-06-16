@@ -1,4 +1,5 @@
 import json
+import time
 
 import numpy as np
 import gymnasium as gym
@@ -12,8 +13,10 @@ def run_experiment(config_path: str = './ea/config.json', verbose: int = 0):
     with open(config_path, 'r') as f:
         config = json.load(f)
 
+    data = pd.DataFrame(columns=['generation', 'time_elapsed', 'best_fitness'])
+
     env = gym.make(config["env_name"])
-    Agent.architecture = [6, 6, 6, 3]
+    Agent.architecture = [4, 4, 2]
     Agent.ENV = env
     Agent.SEED = 1
     np.random.seed(0)
@@ -29,17 +32,23 @@ def run_experiment(config_path: str = './ea/config.json', verbose: int = 0):
     for generation in range(config["n_generations"]):
         if verbose > 0:
             print(f"starting generation {generation + 1}... ", end="")
+
+        start = time.time_ns()
         best, fitness = evolution.simulate_one_generation()
+        duration = time.time_ns() - start
         fitness *= 10
+        data.loc[generation] = [generation, duration, fitness]
+
         if verbose > 0:
             print(f"finished ({fitness})")
-        if fitness == 50.0:
+        if fitness >= config["fitness_threshold"]:
             break
     
-    env = gym.make(config["env_name"], render_mode="human")
-    Agent.ENV = env
-    for i in range(5):
-        print(best.evaluate())
+    data.to_csv('./output.csv')
+    # env = gym.make(config["env_name"], render_mode="human")
+    # Agent.ENV = env
+    # for i in range(5):
+    #     print(best.evaluate())
 
 
 def main():
