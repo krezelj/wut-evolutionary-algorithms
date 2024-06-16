@@ -8,5 +8,5 @@
     "strength": 0.2,
     "fitness_threshold": 500.0,
     "seed": 0,
-    "output_path": "./ea_output.csv"
+    "output_path": "./data/ea_output.csv"
 }
