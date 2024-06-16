@@ -1,4 +1,4 @@
-from ea.specimens import Specimen
+from cartpole_agent import CartPoleAgent
 import numpy as np
 from scipy.special import softmax
 from typing import List
@@ -28,7 +28,7 @@ class Evolution():
         self.__init_first_generation()
 
     def __init_first_generation(self):
-        self.all_specimens : List[Specimen] = \
+        self.all_specimens : List[CartPoleAgent] = \
             np.array([self.specimen_type(**self.init_args) for _ in range(self.generation_size)])
 
     def simulate(self, n_generations):
@@ -38,7 +38,7 @@ class Evolution():
             self.simulate_one_generation()
 
     def simulate_one_generation(self, verbose: int = 0):
-        new_specimens = np.empty(self.generation_size, dtype=Specimen)
+        new_specimens = np.empty(self.generation_size, dtype=CartPoleAgent)
 
         # evaluate all current specimen
         fitness = np.array([
@@ -64,14 +64,15 @@ class Evolution():
     def __create_new_specimen(self, weights = None):
         if weights is None:
             weights = np.ones(self.generation_size)
-        n_parents = N_PARENTS_IF_CROSSOVER if self.allow_crossover else 1
-        parents = np.random.choice(self.all_specimens, size=n_parents, replace=True, p=weights)
-        new_specimen : Specimen = self.specimen_type.crossover(*parents)
+        #n_parents = N_PARENTS_IF_CROSSOVER if self.allow_crossover else 1
+        #parents = np.random.choice(self.all_specimens, size=n_parents, replace=True, p=weights)
+        parent: CartPoleAgent = np.random.choice(self.all_specimens, size=1, replace=True, p=weights)[0]
+        new_specimen : CartPoleAgent = parent.copy()
         if self.allow_mutation:
             new_specimen.mutate(**self.mutation_args)
         return new_specimen
     
-    def get_best_specimen(self) -> tuple[Specimen, float]:
+    def get_best_specimen(self) -> tuple[CartPoleAgent, float]:
         fitness = np.array([
             self.all_specimens[i].evaluate() for i in range(self.generation_size)
         ])

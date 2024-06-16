@@ -1,37 +1,11 @@
 from typing import Optional
+import gymnasium as gym
 import numpy as np
 import numpy.typing as npt
-import gymnasium as gym
 
 Weights = list[tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]]
 
-class Specimen():
-
-    def __init__(self, genes) -> None:
-        self.genes = genes
-
-    def __str__(self) -> str:
-        return "Specimen"
-    
-    def evaluate(self) -> float:
-        return 0
-
-    def mutate(self) -> None:
-        return None    
-
-    def copy(self) -> 'Specimen':
-        return Specimen(self.genes)
-    
-    @classmethod
-    def crossover(cls, *parents):
-        new_genes = {}
-        n_parents = len(parents)
-        for k in parents[0].genes.keys():
-            parent_idx = np.random.randint(0, n_parents)
-            new_genes[k] = parents[parent_idx].genes[k]
-        return new_genes
-    
-class CartPoleAgent(Specimen):
+class CartPoleAgent:
 
     RUNS_PER_EVALUATION = 10
 
@@ -77,10 +51,6 @@ class CartPoleAgent(Specimen):
             ))
         return CartPoleAgent(genes_copy)
     
-    @classmethod
-    def crossover(cls, *parents: list['CartPoleAgent']):
-        return parents[0].copy()
-
     def __init_weights(self):
         self.genes = []
         for i in range(len(self.architecture) - 1):
