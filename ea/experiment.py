@@ -18,8 +18,8 @@ def run_experiment(config_path: str = './ea/config.json', verbose: int = 0):
     env = gym.make(config["env_name"])
     Agent.architecture = [4, 4, 2]
     Agent.ENV = env
-    Agent.SEED = 1
-    np.random.seed(0)
+    Agent.SEED = config["seed"]
+    np.random.seed(config["seed"])
 
     evolution = Evolution(
         generation_size=config["generation_size"],
@@ -44,12 +44,8 @@ def run_experiment(config_path: str = './ea/config.json', verbose: int = 0):
         if fitness >= config["fitness_threshold"]:
             break
     
-    data.to_csv('./output.csv')
-    # env = gym.make(config["env_name"], render_mode="human")
-    # Agent.ENV = env
-    # for i in range(5):
-    #     print(best.evaluate())
-
+    data.to_csv(config["output_path"])
+    
 
 def main():
     run_experiment()

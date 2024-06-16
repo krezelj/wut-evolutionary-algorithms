@@ -6,5 +6,7 @@
     "top_k": 5,
     "prob": 0.1,
     "strength": 0.2,
-    "fitness_threshold": 500.0
+    "fitness_threshold": 500.0,
+    "seed": 0,
+    "output_path": "./ea_output.csv"
 }
