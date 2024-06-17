@@ -1,6 +1,6 @@
 {
     "env_name": "CartPole-v1",
-    "n_runs": 1,
+    "n_runs": 10,
     "n_generations": 20,
     "generation_size": 50,
     "top_k": 5,
@@ -8,5 +8,6 @@
     "strength": 0.2,
     "fitness_threshold": 500.0,
     "seed": 0,
-    "output_path": "./data/ea_output.csv"
+    "output_path": "./data/ea/",
+    "config_name": "20,50,5,0.1,0.2_0"
 }
