@@ -12,10 +12,10 @@ def run_experiment(config_path: str = './rl/config.json', verbose: int = 0):
         config = json.load(f)
 
     deterministic_values = []
-    new_logger = configure(config["output_path"], ["stdout", "csv"])
     env = gym.make(config["env_name"])
 
-    for run in config["n_runs"]:
+    for run in range(config["n_runs"]):
+        new_logger = configure(config["output_path"] + f"_{run}", ["stdout", "csv"])
         stable_baselines3.common.utils.set_random_seed(config["seed"] + run)
         policy_kwargs = dict(
             activation_fn=torch.nn.ReLU,
@@ -53,7 +53,7 @@ def run_experiment(config_path: str = './rl/config.json', verbose: int = 0):
 
     print(deterministic_values)
     with open(config["output_path"] + '/rl_evaluation.txt', 'w') as f:    
-        f.write(deterministic_values)
+        f.write(str(deterministic_values))
 
 
 def main():
