@@ -13,7 +13,7 @@ def run_experiment(config_path: str = './ea/config.json', verbose: int = 0):
     with open(config_path, 'r') as f:
         config = json.load(f)
 
-    data = pd.DataFrame(columns=['run', 'generation', 'time_elapsed', 'best_fitness'])
+    data = pd.DataFrame(columns=['run', 'generation', 'time_elapsed', 'best_fitness', 'total_time'])
 
     env = gym.make(config["env_name"])
     Agent.architecture = [4, 4, 2]
@@ -31,6 +31,8 @@ def run_experiment(config_path: str = './ea/config.json', verbose: int = 0):
                 strength=config["strength"]
             )
         )
+
+        total_time = 0
         for generation in range(config["n_generations"]):
             if verbose > 0:
                 print(f"starting generation {generation + 1}... ", end="")
@@ -38,8 +40,9 @@ def run_experiment(config_path: str = './ea/config.json', verbose: int = 0):
             start = time.time_ns()
             best, fitness = evolution.simulate_one_generation()
             duration = time.time_ns() - start
+            total_time += duration
             fitness *= 10
-            data.loc[len(data)] = [run, generation, duration, fitness]
+            data.loc[len(data)] = [run, generation, duration, fitness, total_time]
 
             if verbose > 0:
                 print(f"finished ({fitness})")
