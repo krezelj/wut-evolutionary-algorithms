@@ -1,13 +1,14 @@
 {
     "env_name": "CartPole-v1",
-    "n_runs": 1,
+    "n_runs": 10,
     "T": 20.0,
     "T_min": 1.0,
     "alpha": 0.9,
     "C": 100,
     "prob": 0.1,
-    "strength": 0.3,
+    "strength": 0.2,
     "fitness_threshold": 500.0,
     "seed": 0,
-    "output_path": "./data/sa_output.csv"
+    "output_path": "./data/sa/",
+    "config_name": "20.0,1.0,0.9,100,0.1,0.3_0"
 }
