@@ -1,0 +1,13 @@
+{
+    "env_name": "CartPole-v1",
+    "n_runs": 1,
+    "net_arch": [
+        8,
+        8
+    ],
+    "total_timesteps": 100000,
+    "evaluation_runs": 10,
+    "fitness_threshold": 500.0,
+    "seed": 0,
+    "output_path": "./data"
+}
