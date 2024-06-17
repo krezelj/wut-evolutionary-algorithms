@@ -5,6 +5,9 @@
         8,
         8
     ],
+    "eps_init": 0.3,
+    "eps_final": 0.03,
+    "lr": 0.003,
     "total_timesteps": 100000,
     "evaluation_runs": 10,
     "fitness_threshold": 500.0,
